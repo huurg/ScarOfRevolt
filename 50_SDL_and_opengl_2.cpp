@@ -21,7 +21,9 @@ using namespace std;
 //Screen dimension + other constants
 const int SCREEN_WIDTH = 1600;
 const int SCREEN_HEIGHT = 900;
-const double WIDTH_METRES = 10.0;
+const double WIDTH_METRES = 20.0;
+const double NEAR_METRES = -100.0;
+const double FAR_METRES = 100.0;
 const int MAX_WALLS = 50;
 const int MAX_CIRCLES = 100;
 bool ANGLED_CAMERA = true;
@@ -215,9 +217,11 @@ void render()
     glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
+    /*
     glScaled(1.0/WIDTH_METRES,1.0/WIDTH_METRES,1.0/WIDTH_METRES);
     glScaled(1,(double)SCREEN_WIDTH/(double)SCREEN_HEIGHT,1);
-
+    */
+    glOrtho(-WIDTH_METRES/2.0,WIDTH_METRES/2.0,-SCREEN_HEIGHT*WIDTH_METRES/SCREEN_WIDTH/2.0,SCREEN_HEIGHT*WIDTH_METRES/SCREEN_WIDTH/2.0,NEAR_METRES,FAR_METRES);
     if(ANGLED_CAMERA) {
         glRotated(CAMERA_TILT,1,0,0);
         glRotated(CAMERA_ROTATE,0,0,1);
@@ -238,7 +242,7 @@ void render()
     glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
-    glScaled((double)SCREEN_HEIGHT/(double)SCREEN_WIDTH/2,1.0/2,1.0/2);
+    //glScaled((double)SCREEN_HEIGHT/(double)SCREEN_WIDTH/2,1.0/2,1.0/2);
     //Overlay stuff here
     /*
     glPushMatrix();
