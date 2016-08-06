@@ -17,17 +17,18 @@ using namespace std;
 #include "Environment.h"
 #include "Matrix.h"
 #include "QuadSolver.h"
+#include "AnchorWheel.h"
 
 //Screen dimension + other constants
-const int SCREEN_WIDTH = 1600;
-const int SCREEN_HEIGHT = 900;
+const int SCREEN_WIDTH = 1900;
+const int SCREEN_HEIGHT = 1000;
 const double WIDTH_METRES = 20.0;
 const double NEAR_METRES = -100.0;
-const double FAR_METRES = 100.0;
+const double FAR_METRES = 70.0;
 const int MAX_WALLS = 50;
 const int MAX_CIRCLES = 100;
 bool ANGLED_CAMERA = true;
-double CAMERA_TILT = 50.0;
+double CAMERA_TILT = 60.0;
 double CAMERA_ROTATE = 45.0;
 
 //Starts up SDL, creates window, and initializes OpenGL
@@ -70,6 +71,7 @@ const int FRAMES_POLLED = 60;
 
 //Game global variables
 int gPlayerCircle = -1;
+AnchorWheel* gAnchorWheel;
 
 //Mouse state globals
 bool gMouseDown = false;
@@ -147,6 +149,9 @@ bool init()
     */
     gEnvironment->loadWalls("walls/boundary.wal");
     gEnvironment->loadWalls("walls/house.wal");
+
+    gAnchorWheel = new AnchorWheel();
+
 	return success;
 }
 
@@ -189,7 +194,9 @@ bool initGL()
 		printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
 		success = false;
 	}
-    glViewport(-SCREEN_WIDTH/2, -SCREEN_HEIGHT/2, SCREEN_WIDTH*2, SCREEN_HEIGHT*2);
+    //glViewport(-SCREEN_WIDTH, -SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	return success;
 }
 
@@ -214,6 +221,7 @@ void update()
 
 void render()
 {
+    glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 
@@ -222,22 +230,25 @@ void render()
     glScaled(1,(double)SCREEN_WIDTH/(double)SCREEN_HEIGHT,1);
     */
     glOrtho(-WIDTH_METRES/2.0,WIDTH_METRES/2.0,-SCREEN_HEIGHT*WIDTH_METRES/SCREEN_WIDTH/2.0,SCREEN_HEIGHT*WIDTH_METRES/SCREEN_WIDTH/2.0,NEAR_METRES,FAR_METRES);
-    if(ANGLED_CAMERA) {
-        glRotated(CAMERA_TILT,1,0,0);
-        glRotated(CAMERA_ROTATE,0,0,1);
-    }
 
-    if(gPlayerCircle>=0) {
-        glTranslated(-gEnvironment->getCircleX(gPlayerCircle),-gEnvironment->getCircleY(gPlayerCircle),0.0);
-    }
     glMatrixMode(GL_MODELVIEW);
 
+    glPushMatrix();
+        if(ANGLED_CAMERA) {
+            glRotated(CAMERA_TILT,1,0,0);
+            glRotated(CAMERA_ROTATE,0,0,1);
+        }
+
+        if(gPlayerCircle>=0) {
+            glTranslated(-gEnvironment->getCircleX(gPlayerCircle),-gEnvironment->getCircleY(gPlayerCircle),0.0);
+        }
+
+        renderBackground();
+
+        gEnvironment->render();
+    glPopMatrix();
 	//Clear color buffer
-	glClear( GL_COLOR_BUFFER_BIT );
-
-    renderBackground();
-
-    gEnvironment->render();
+    gAnchorWheel->render();
 
     glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
@@ -263,6 +274,7 @@ void render()
 
 void close()
 {
+    delete gAnchorWheel;
     delete gEnvironment;
 	//Destroy window
 	SDL_DestroyWindow( gWindow );
@@ -332,6 +344,12 @@ int main( int argc, char* args[] )
                     gMouseDirY = mouseDirVec.E(1,0).getReal();
                 }
 			}
+            const Uint8* currentKeyStates = SDL_GetKeyboardState( NULL );
+            for(int i = 0; i < 9; i++) {
+                bool thisKeyState = currentKeyStates[gAnchorWheel->getScanCode(i)];
+                gAnchorWheel->step(i, thisKeyState);
+
+            }
 
 			//Render quad
 			render();
