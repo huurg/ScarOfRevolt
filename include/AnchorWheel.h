@@ -29,10 +29,11 @@ class AnchorWheel {
         AnchorWheel();
         ~AnchorWheel();
         void render();
-        void keyDown(int i);
-        void keyUp(int i);
         void step(int i, bool new_state);
         SDL_Scancode getScanCode(int i);
+        bool isDown(int i) const;
+        bool isUp(int i) const;
+        bool isHeld(int i) const;
 };
 
 #endif // HEADER_ANCHORWHEEL

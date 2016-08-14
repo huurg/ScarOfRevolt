@@ -31,30 +31,24 @@ void AnchorWheel::render() {
         double this_y = scaling_factor_master*scaling_factor_y*sin(thistheta)+position_modifier_y;
         glColor3f(0.0f, 0.0f, 1.0f);
         if(state[i]) {
-            cout << "Key: " << i << ". Pressed." << endl;
             glColor3f(1.0f, 0.5f, 0.0f);
         }
         if(down[i]) {
-            cout << "Key: " << i << ". Down." << endl;
             glColor3f(0.0f, 1.0f, 1.0f);
         }
         if(up[i]){
-            cout << "Key: " << i << ". Up." << endl;
             glColor3f(1.0f, 0.0f, 0.0f);
         }
         RenderUtils::renderCircle(anchor_size_modifier,this_x,this_y,20);
     }
     glColor3f(1.0f, 0.8f, 0.0f);
     if(state[8]) {
-        cout << "Key: " << 8 << ". Pressed." << endl;
         glColor3f(0.0f, 0.0f, 0.0f);
     }
     if(down[8]) {
-        cout << "Key: " << 8 << ". Down." << endl;
         glColor3f(0.0f, 1.0f, 1.0f);
     }
     if(up[8]){
-        cout << "Key: " << 8 << ". Up." << endl;
         glColor3f(1.0f, 0.0f, 0.0f);
     }
     RenderUtils::renderCircle(2*anchor_size_modifier,position_modifier_x,position_modifier_y,20);
@@ -88,20 +82,6 @@ void AnchorWheel::deinit() {
     delete [] previous_state;
 }
 
-void AnchorWheel::keyDown(int i) {
-    if(!state[i]) {
-        state[i]=true;
-        down[i]=true;
-    }
-}
-
-void AnchorWheel::keyUp(int i) {
-    if(state[i]) {
-        state[i]=false;
-        up[i]=true;
-    }
-}
-
 void AnchorWheel::step(int i, bool new_state) {
     down[i] = false;
     up[i] = false;
@@ -113,4 +93,16 @@ void AnchorWheel::step(int i, bool new_state) {
 
 SDL_Scancode AnchorWheel::getScanCode(int i) {
     return anchor_bindings[i];
+}
+
+bool AnchorWheel::isDown(int i) const {
+    return down[i];
+}
+
+bool AnchorWheel::isUp(int i) const {
+    return up[i];
+}
+
+bool AnchorWheel::isHeld(int i) const {
+    return state[i];
 }

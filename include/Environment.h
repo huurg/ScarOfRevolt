@@ -4,6 +4,7 @@
 #include "Wall.h"
 #include "Circle.h"
 #include "Vector2D.h"
+#include "Player.h"
 
 const double COLLISION_MARGIN = 0.01;
 
@@ -13,8 +14,15 @@ private:
     Wall** walls;
     int C, Nc;
     Circle** circles;
+    Player* player;
     bool visible;
     bool paused;
+
+    double framerate;
+    bool mousedown;
+    double mouseX;
+    double mouseY;
+    int playercircle;
 
     //Interaction methods
     bool collisionCW(int indexC, int indexW, double inFR);
@@ -33,7 +41,9 @@ public:
     int addCircle(double rx, double ry, double vx, double vy, double inR, double inM);
     void removeWall(int index);
     void removeCircle(int index);
-    void step(double inFR, bool inMD, double inMX, double inMY, int inPC); //args: framerate, mousedown, mouseX, mouseY, playercircle
+    void frameListen(double inFR, bool inMD, double inMX, double inMY, int inPC, bool inUp, bool inDown, bool inHeld);
+    void step(); //args: framerate, mousedown, mouseX, mouseY, playercircle
+    void frameTell(double* inCharge, double* inConc);
     void render();
     void pause();
     void unpause();
