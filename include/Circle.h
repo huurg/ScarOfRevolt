@@ -16,7 +16,9 @@ const double CIRCLE_DEFAULT_FRICTION = sqrt(5.0);
 const double CIRCLE_DEFAULT_ELASTICITY = sqrt(0.5);
 const bool CIRCLE_DEFAULT_CC_COLLISION = true;
 
-class Circle {
+#include "PE_Entity.h"
+
+class Circle: public PE_Entity {
 public:
     //Properties
     Vector2D* r;
@@ -40,6 +42,12 @@ public:
     void updatePos(const Vector2D& inR);
     void setVel(double inVX, double inVY);
     void setVel(const Vector2D& inV);
+    double getRX() const;
+    double getRY() const;
+    double getVX() const;
+    double getVY() const;
+    double getR() const;
+    double getM() const;
 };
 
 #endif // CIRCLE
