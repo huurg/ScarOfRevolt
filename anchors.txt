@@ -1,0 +1,14 @@
+#Index	Type	Name		Shortname	Assignable Trigger_Function
+1	c	Fire		Fir		1
+2	f	Wavepacket	awa		1
+3	u	Homing		ehom		1
+4	c	Water		Wag		1
+5	c	Steam		Stehan		0
+6	f	Plane		epla		1
+7	f	Planewave	eplawa		0
+8	f	Radiate		ayra		1
+9	c	Hydrogen	Hydr		0
+10	c	Oxygen		Oxyg		0
+11	u	Impactless	istat		0
+12	u	Blindcast	eyeb		1
+13	u	Embed Fireball	infirawa	0

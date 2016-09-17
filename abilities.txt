@@ -1,0 +1,4 @@
+#Index	Name		Function_Index
+1	Fireball	1
+2	Fuck Goat	2
+3	Steamwave	3
