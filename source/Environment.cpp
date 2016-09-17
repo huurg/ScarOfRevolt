@@ -14,6 +14,8 @@ using namespace std;
 #include <cmath>
 
 #include "Vector2D.h"
+#include "Player.h"
+#include "PE_PhysicsEnvironment.h"
 
 Environment::Environment(int inNw, int inNc) {
     Nw = inNw;
@@ -25,6 +27,7 @@ Environment::Environment(int inNw, int inNc) {
     W = 0;
     C = 0;
     visible = true;
+    player = new Player();
 }
 
 Environment::~Environment() {
@@ -40,6 +43,7 @@ Environment::~Environment() {
         }
     }
     delete[] circles;
+    delete player;
 }
 
 int Environment::addWall(double ax, double ay, double bx, double by) {
@@ -117,21 +121,32 @@ void Environment::unpause() {
     paused = false;
 }
 
-void Environment::step(double inFR, bool inMD, double inMX, double inMY, int inPC) {
+void Environment::frameListen(double inFR, bool inMD, double inMX, double inMY, int inPC, bool inUp, bool inDown, bool inHeld) {
+    framerate = inFR;
+    mousedown = inMD;
+    mouseX = inMX;
+    mouseY = inMY;
+    playercircle = inPC;
+    player->setPlayerCircle(circles[playercircle]);
+    player->frameListen(inUp, inDown, inHeld);
+    listenToCreator(*player);
+}
+
+void Environment::step() {
     if(!paused) {
         for(int i = 0; i < Nc; i++) {
             Circle* thisC = circles[i];
             if(thisC!=NULL) {
                 for(int j = i+1; j < Nc; j++) {
                     if(i!=j) {
-                        updateCCvels(i,j,inFR);
+                        updateCCvels(i,j,framerate);
                     }
                 }
                 for(int j = 0; j < Nw; j++) {
                     if(walls[j]!=NULL) {
                         //Make coefficient of restitution property of each wall and each circle
                         double thisCoeffRest = 0.5;
-                        if(collisionCW(i,j,inFR)) {
+                        if(collisionCW(i,j,framerate)) {
                             Vector2D* thisU = u_(i,j);
                             Vector2D* thisT = t_(i,j);
                             Vector2D* thisR = thisC->r;
@@ -143,13 +158,13 @@ void Environment::step(double inFR, bool inMD, double inMX, double inMY, int inP
                                 delete thisU;
                                 delete thisT;
                             }
-                        } else if(collisionCA(i,j,inFR)) {
+                        } else if(collisionCA(i,j,framerate)) {
                             Vector2D* thisA = walls[j]->a;
                             Vector2D* thisCv = circles[i]->r;
                             Vector2D thisU = (*thisA-*thisCv)*(1.0/(*thisA-*thisCv).R());
                             circles[i]->updateVel(thisU*(-(1.0+thisCoeffRest)*circles[i]->v->dot(thisU)));
                             circles[i]->updatePos(*thisA-thisU*(thisC->R+COLLISION_MARGIN)-*thisCv);
-                        } else if(collisionCB(i,j,inFR)) {
+                        } else if(collisionCB(i,j,framerate)) {
                             Vector2D* thisB = walls[j]->b;
                             Vector2D* thisCv = circles[i]->r;
                             Vector2D thisU = (*thisB-*thisCv)*(1.0/(*thisB-*thisCv).R());
@@ -160,9 +175,9 @@ void Environment::step(double inFR, bool inMD, double inMX, double inMY, int inP
                 }
                 //Friction decay
 
-                if((i==inPC)&&(inMD)&&(sqrt(inMX*inMX+inMY*inMY)>0.05)) {
-                    double xd = inMX;
-                    double yd = inMY;
+                if((i==playercircle)&&(mousedown)&&(sqrt(mouseX*mouseX+mouseY*mouseY)>0.05)) {
+                    double xd = mouseX;
+                    double yd = mouseY;
                     Vector2D rd(xd*1.0, yd*1.0);
                     if(rd.R()>1.0) {
                         rd = rd*(1.0/rd.R());
@@ -179,23 +194,28 @@ void Environment::step(double inFR, bool inMD, double inMX, double inMY, int inP
                     } else {
                         temp0 = 0.0;
                     }
-                    double temp = (thisAccel+temp0)*(1.0-(thisC->v->dot(rd))/(thisMaxSpeed*rd.R2()))/(rd.R()*inFR);
+                    double temp = (thisAccel+temp0)*(1.0-(thisC->v->dot(rd))/(thisMaxSpeed*rd.R2()))/(rd.R()*framerate);
                     //cout << "xd = " << xd << "\tyd = " << yd << "\ttemp = " << temp << endl;
                     thisC->updateVel(rd*temp/*-ud*(thisC->v->dot(ud))*(100.0/inFR)*/);
                     thisC->setVel(rd*(thisC->v->dot(rd))*(1.0/rd.R2()));
                 } else {
                     //Make friction a property of both the environment and each circle. Best value for player is 5.0
                     double thisFriction = sqrt(5.0);
-                    thisC->updateVel(*(thisC->v)*(-thisFriction*thisC->friction/inFR));
+                    thisC->updateVel(*(thisC->v)*(-thisFriction*thisC->friction/framerate));
                 }
 
                 //Update position
                 Vector2D* thisV = thisC->v;
-                Vector2D temp2 = thisV->times(1.0/inFR);
+                Vector2D temp2 = thisV->times(1.0/framerate);
                 thisC->updatePos(temp2);
             }
         }
+        player->step();
     }
+}
+
+void Environment::frameTell(double* inCharge, double* inConc) {
+    player->frameTell(inCharge, inConc);
 }
 
 bool Environment::collisionCW(int indexC, int indexW, double inFR) {
@@ -390,5 +410,45 @@ bool Environment::setCircleCCC(int index, bool inCCC) {
         return true;
     } else {
         return false;
+    }
+}
+
+int Environment::nextFreeCircle() const {
+    int i = 0;
+    while((circles[i]!=NULL)&&(i<Nc)) {
+        i++;
+    }
+    if(i==Nc) i = -1;
+    return i;
+}
+
+void Environment::listenToCreator(PE_Creator& inC) {
+    int thisI = nextFreeCircle();
+    if(thisI>=0) {
+        PE_Entity* thisE = NULL;
+        while((thisE=inC.nextEntityToCreate(thisI))) {
+            cout << "Circle adding to env: entity found" << endl;
+            if(thisE->isA(PE_Entity::ENTITY_TYPE_CIRCLE)) {
+                Circle* thisC = static_cast<Circle*>(thisE);
+                addCircle(thisC);
+                cout << "Circle added to env" << endl;
+            }
+        }
+    }
+
+}
+
+int Environment::addCircle(Circle* inC) {
+    int i = 0;
+    while((circles[i]!=NULL)&&(i<Nc)) {
+        i++;
+    }
+    if(i!=Nc) {
+        circles[i] = inC;
+        C++;
+        return i;
+    } else {
+        cout << "Can't add Circle. Circle list full" << endl;
+        return -1;
     }
 }

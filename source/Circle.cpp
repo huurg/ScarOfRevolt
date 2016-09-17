@@ -7,7 +7,11 @@
 #include <GL\GLU.h>
 #include <cmath>
 
+#include <PE_Entity.h>
+
 Circle::Circle() {
+    addEntityType(PE_Entity::ENTITY_TYPE_CIRCLE);
+
     r = new Vector2D();
     v = new Vector2D();
     R = 0.0;
@@ -18,6 +22,8 @@ Circle::Circle() {
 }
 
 Circle::Circle(double rx, double ry, double vx, double vy, double inR, double inM) {
+    addEntityType(PE_Entity::ENTITY_TYPE_CIRCLE);
+
     r = new Vector2D(rx, ry);
     v = new Vector2D(vx, vy);
     R = inR;
@@ -67,4 +73,23 @@ void Circle::setVel(const Vector2D& inV) {
 void Circle::updatePos(const Vector2D& inR) {
     r->x(r->x()+inR.x());
     r->y(r->y()+inR.y());
+}
+
+double Circle::getRX() const {
+    return r->x();
+}
+double Circle::getRY() const {
+    return r->y();
+}
+double Circle::getVX() const {
+    return v->x();
+}
+double Circle::getVY() const {
+    return v->y();
+}
+double Circle::getR() const {
+    return R;
+}
+double Circle::getM() const {
+    return M;
 }
