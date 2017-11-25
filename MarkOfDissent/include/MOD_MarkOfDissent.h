@@ -3,7 +3,8 @@
 
 class MOD_MarkOfDissent {
     private:
-
+        // State
+            /* Normal gameplay resumed, Paused, title menu, script running etc. */
     public:
 
 };
