@@ -1,0 +1,34 @@
+# depslib dependency file v1.0
+1511020896 source:u:\programmingzone\markofdissent\markofdissent\source\lukeconsoleout.cpp
+	"LukeConsoleOut.h"
+	<iostream>
+	<ostream>
+	<ctime>
+
+1511633325 u:\programmingzone\markofdissent\markofdissent\include\lukeconsoleout.h
+	<iostream>
+	<ostream>
+	<ctime>
+	"LCL_RealMatrix_imp1.h"
+
+1511632939 source:u:\programmingzone\markofdissent\markofdissent\main.cpp
+	<iostream>
+	"LukeConsoleOut.h"
+	"LCL_RealMatrix.h"
+
+1511633592 u:\programmingzone\markofdissent\markofdissent\include\lcl_realmatrix.h
+	<iostream>
+	<ostream>
+
+1511632708 source:u:\programmingzone\markofdissent\markofdissent\source\lcl_realmatrix.cpp
+	"LCL_RealMatrix.h"
+	<iostream>
+	<ostream>
+	"LukeConsoleOut.h"
+
+1511633471 u:\programmingzone\markofdissent\markofdissent\source\lcl_realmatrix_imp1.h
+	"LCL_RealMatrix.h"
+	<iostream>
+	<ostream>
+	"LukeConsoleOut.h"
+
